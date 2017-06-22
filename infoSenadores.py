@@ -17,7 +17,3 @@ if status_code == 200:
 		print("Región: " + senadores[i].contents[3].contents[3].contents[1].getText().strip()+ '\n'+"Circunscripción: "+senadores[i].contents[3].contents[3].contents[3].getText())
 		print(senadores[i].contents[3].contents[5].contents[0].string  + senadores[i].contents[3].contents[5].contents[1].getText())
 		print(partido[2*i - 1].getText()+'\n')
-	
-	#for i in range(3,38*4, 4):
-		
-		
