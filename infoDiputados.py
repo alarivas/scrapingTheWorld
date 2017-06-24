@@ -7,7 +7,7 @@ url = "https://www.camara.cl/camara/diputados.aspx"
 
 req = requests.get(url)
 status = req.status_code
-conn = psycopg2.connect("dbname= user=app password= host=152.74.52.213 port=5432")
+conn = psycopg2.connect("dbname= user= password= host=152.74.52.213 port=5432")
 cursor = conn.cursor()
 
 if status == 200:
