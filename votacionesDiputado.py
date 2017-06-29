@@ -110,6 +110,6 @@ if __name__ == '__main__':
 
 			pareo = html.find('table',{'id': 'ctl00_mainPlaceHolder_dtlPareos'})
 			print("Diputados pareo: " + '\n')
-			for diputado in art5.find_all('a'):
+			for diputado in pareo.find_all('a'):
 				print(fixName(diputado.contents[0].string.strip()))
 			
