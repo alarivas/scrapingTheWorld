@@ -72,6 +72,7 @@ if __name__ == '__main__':
 			entrada = html.find('div',{'class': 'col1'})
 			fecha = createTimeStamp(entrada.contents[2])
 			tema = entrada.contents[5].strip()
+
 			#query1 = "INSERT INTO app_schema.votacion (fecha_hora, tema) VALUES (%s, %s);"
 			#data1 = (fecha, tema)
 			#cursor.execute(query1, data1)
@@ -94,7 +95,6 @@ if __name__ == '__main__':
 					data2 = (fecha, nombre, voto)
 					cursor.execute(query2, data2)
 				asd = True
-				
 			conn.commit()
 		
 

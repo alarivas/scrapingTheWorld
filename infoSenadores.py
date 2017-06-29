@@ -49,11 +49,13 @@ if __name__ == '__main__':
 			partido_final = part[1].replace(".", "")
 			apellido = getFatherPaternalSurname(nombre_aux[0])
 			nombre_final = nombre_aux[1].strip() + ' ' + apellido.strip()
-			query1 = "INSERT INTO app_schema.congresista (nombre, partido) VALUES (%s, %s);"
-			data1 = (nombre_final, partido_final)
-			cursor.execute(query1, data1)
-			query2 =  "INSERT INTO app_schema.senador (nombre, email, telefono, circunscripcion) VALUES (%s, %s, %s, %s);"
-			data2 = (nombre_final, mail, telefono, circunscripcion)
-			cursor.execute(query2, data2)
+			imagen = "www.senado.cl" + senadores[i].contents[1].find('img').get('src')
+			#query1 = "INSERT INTO app_schema.congresista (nombre, partido) VALUES (%s, %s);"
+			#data1 = (nombre_final, partido_final)
+			#cursor.execute(query1, data1)
+			#query2 =  "INSERT INTO app_schema.senador (nombre, email, telefono, circunscripcion) VALUES (%s, %s, %s, %s);"
+			#data2 = (nombre_final, mail, telefono, circunscripcion)
+			#cursor.execute(query2, data2)
+			#cursor.execute("UPDATE app_schema.congresista SET imagen = %s WHERE nombre = %s;", (imagen, nombre_final))
 
 		conn.commit()	

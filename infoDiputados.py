@@ -7,8 +7,8 @@ url = "https://www.camara.cl/camara/diputados.aspx"
 
 req = requests.get(url)
 status = req.status_code
-conn = psycopg2.connect("dbname= user= password= host=152.74.52.213 port=5432")
-cursor = conn.cursor()
+#conn = psycopg2.connect("dbname= user= password= host=152.74.52.213 port=5432")
+#cursor = conn.cursor()
 
 if status == 200:
 	html = BeautifulSoup(req.text, "html.parser")
@@ -22,12 +22,14 @@ if status == 200:
 		distrito = diputados[i].contents[5].contents[3].string.split()
 		distrito_final = distrito[1].replace("N°", "")
 		partido = diputados[i].contents[5].contents[5].string.split()
+		imagen = "www.camara.cl" + diputados[i].find('img').get('src')
 		query1 = "INSERT INTO app_schema.congresista (nombre, partido) VALUES (%s, %s);"
 		data1 = (nombres, partido[1])
 		cursor.execute(query1, data1)
 		query2 = "INSERT INTO app_schema.diputado (nombre, distrito) VALUES (%s, %s);"
 		data2 = (nombres, distrito_final)
 		cursor.execute(query2, data2)
+		cursor.execute("UPDATE app_schema.congresista SET imagen = %s WHERE nombre = %s", (imagen, nombres))
 		#print("Nombre: " + nombres + '\n' + "Región: " + region[1] + '\n' + "Distrito: " + distrito_final + '\n' + "Partido: " + partido[1])
 		#print('\n')
-	conn.commit()
+	#conn.commit()
