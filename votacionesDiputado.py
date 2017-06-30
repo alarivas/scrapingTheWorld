@@ -51,7 +51,10 @@ def fixName(name):
 	name = aux[1] + " " + aux[0]
 	name = re.split(' ', name)
 	if len(name) == 4:
-		name = name[0] + " " + name[1] + " " + name[2]
+		if name[2] == "Del":
+			name = name[0] + " " + name[1]
+		else:
+			name = name[0] + " " + name[1] + " " + name[2]
 	elif len(name) == 3:
 		name = name[0] + " " + name[1]
 	return name
@@ -60,10 +63,11 @@ def fixName(name):
 if __name__ == '__main__':
 	
 
-	#conn = psycopg2.connect("dbname= user= password= host=152.74.52.213 port=5432")
-	#cursor = conn.cursor()
+	conn = psycopg2.connect("dbname=app user=app password=necesitovida host=152.74.52.213 port=5432")
+	cursor = conn.cursor()
 	#25358 25845
-	for i in range(25498, 25499):
+	#25562 truncated art
+	for i in range(25700, 25846):
 		url = "https://www.camara.cl/trabajamos/sala_votacion_detalle.aspx?prmID=" + str(i)
 		req = requests.get(url)
 		status_code = req.status_code
@@ -74,42 +78,60 @@ if __name__ == '__main__':
 			html = BeautifulSoup(req.text, "html.parser")
 			entrada = html.find('div',{'class': 'stress'})
 			
-			"""try:
+			try:
 				if entrada.contents[5].contents[1].string.strip() != "Sesión:":
 					fecha = createTimeStamp(entrada.contents[3].contents[2].string.replace("hrs.", "").strip())
 					tema = entrada.contents[5].contents[2].string.strip()
 					articulo = entrada.contents[7].contents[2].string.strip()
-					print("Fecha: " + fecha + '\n' + "Tema: " + tema + '\n' + "Art: " + articulo + '\n' + str(i))
-
+					if len(articulo) > 1000:
+						articulo = articulo[:997] + "..."
+					#print("Fecha: " + fecha + '\n' + "Tema: " + tema + '\n' + "Art: " + articulo + '\n' + str(i))
+					#cursor.execute("INSERT INTO app_schema.votacion_diputados (id, tema, articulo, fecha) VALUES (%s, %s, %s, %s)", (str(i),tema, articulo, fecha))
+				else:
+					continue
 			except AttributeError:
-				pass"""
+				continue
 
-			aFavor = html.find('table',{'id': 'ctl00_mainPlaceHolder_dtlAFavor'})
-			print("Diputados a favor: " + '\n')
-			for diputado in aFavor.find_all('a'):
-				print(fixName(diputado.contents[0].string.strip()))
-			print('\n')
+			try:
+				aFavor = html.find('table',{'id': 'ctl00_mainPlaceHolder_dtlAFavor'})
+				for diputado in aFavor.find_all('a'):
+					nombre = fixName(diputado.contents[0].string.strip())
+					cursor.execute("INSERT INTO app_schema.voto_diputados (id, nombre, voto) VALUES (%s, %s, %s)", (str(i), nombre, "Si"))
+			except AttributeError:
+				pass
 
-			enContra = html.find('table',{'id': 'ctl00_mainPlaceHolder_dtlEncontra'})
-			print("Diputados en contra: " + '\n')
-			for diputado in enContra.find_all('a'):
-				print(fixName(diputado.contents[0].string.strip()))
-			print('\n')
+			try:
+				enContra = html.find('table',{'id': 'ctl00_mainPlaceHolder_dtlEncontra'})
+				for diputado in enContra.find_all('a'):
+					nombre = fixName(diputado.contents[0].string.strip())
+					cursor.execute("INSERT INTO app_schema.voto_diputados (id, nombre, voto) VALUES (%s, %s, %s)", (str(i), nombre, "No"))
+			except AttributeError:
+				pass		
+					
+			try:		
+				abstencion = html.find('table',{'id': 'ctl00_mainPlaceHolder_dtlAbstencion'})
+				for diputado in abstencion.find_all('a'):
+					nombre = fixName(diputado.contents[0].string.strip())
+					cursor.execute("INSERT INTO app_schema.voto_diputados (id, nombre, voto) VALUES (%s, %s, %s)", (str(i), nombre, "Abstención"))
+			except AttributeError:
+				pass
 
-			abstencion = html.find('table',{'id': 'ctl00_mainPlaceHolder_dtlAbstencion'})
-			print("Diputados abstención: " + '\n')
-			for diputado in abstencion.find_all('a'):
-				print(fixName(diputado.contents[0].string.strip()))
-			print('\n')
+			try:	
+				art5 = html.find('table',{'id': 'ctl00_mainPlaceHolder_dtlArt5'})
+				for diputado in art5.find_all('a'):
+					nombre = fixName(diputado.contents[0].string.strip())	
+					cursor.execute("INSERT INTO app_schema.voto_diputados (id, nombre, voto) VALUES (%s, %s, %s)", (str(i), nombre, "No puede votar"))
+			except AttributeError:
+				pass
 
-			art5 = html.find('table',{'id': 'ctl00_mainPlaceHolder_dtlArt5'})
-			print("Diputados art5: " + '\n')
-			for diputado in art5.find_all('a'):
-				print(fixName(diputado.contents[0].string.strip()))		
-			print('\n')
-
-			pareo = html.find('table',{'id': 'ctl00_mainPlaceHolder_dtlPareos'})
-			print("Diputados pareo: " + '\n')
-			for diputado in pareo.find_all('a'):
-				print(fixName(diputado.contents[0].string.strip()))
-			
+			try:		
+				pareo = html.find('table',{'id': 'ctl00_mainPlaceHolder_dtlPareos'})
+				for diputado in pareo.find_all('a'):
+					nombre = fixName(diputado.contents[0].string.strip())
+					cursor.execute("INSERT INTO app_schema.voto_diputados (id, nombre, voto) VALUES (%s, %s, %s)", (str(i), nombre, "Pareo"))
+					
+					
+			except AttributeError:
+				pass
+			print(str(i))
+	conn.commit()
