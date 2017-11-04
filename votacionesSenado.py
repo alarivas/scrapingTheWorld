@@ -1,19 +1,25 @@
 
+
 from bs4 import BeautifulSoup
 import requests
 import re
 import psycopg2
+import datetime
 
 
-def createTimeStamp(fecha):
+def createTimeStamp(fecha, i):
 	aux = fecha.split()
 	day = aux[4].strip()
 	month = aux[6].strip()
 	year = aux[8].strip()
 	time = aux[11].strip()
+	time_object = datetime.datetime.strptime(time, '%H:%M')
+	time_object = (time_object + datetime.timedelta(0,i%10)).time()
+	print(time_object)
 	month = monthToNumber(month)
 	day = fixDay(day)
-	fecha = year + "-" + month + "-" + day + " " + time
+	fecha = year + "-" + month + "-" + day + " " + str(time_object)
+	print(fecha)
 	return fecha
 
 def monthToNumber(month):
@@ -56,9 +62,9 @@ def fixName(name):
 
 if __name__ == '__main__':
 
-	conn = psycopg2.connect("dbname= user= password= host=152.74.52.213 port=5432")
+	conn = psycopg2.connect("dbname= user= password= host= port=")
 	cursor = conn.cursor()
-	for i in range (6680, 6774):
+	for i in range (6800, 6971):
 		url = "http://www.senado.cl/appsenado/index.php?mo=sesionessala&ac=detalleVotacion&votaid=" + str(i)
 		req = requests.get(url)
 		status_code = req.status_code
@@ -70,17 +76,15 @@ if __name__ == '__main__':
 		if status_code == 200:
 			html = BeautifulSoup(req.text, "html.parser")
 			entrada = html.find('div',{'class': 'col1'})
-			fecha = createTimeStamp(entrada.contents[2])
+			fecha = createTimeStamp(entrada.contents[2], i)
 			tema = entrada.contents[5].strip()
-
-			#query1 = "INSERT INTO app_schema.votacion (fecha_hora, tema) VALUES (%s, %s);"
-			#data1 = (fecha, tema)
-			#cursor.execute(query1, data1)
+			query1 = "INSERT INTO app_schema.votacion (fecha_hora, tema) VALUES (%s, %s);"
+			data1 = (fecha, tema)
+			cursor.execute(query1, data1)
 			senadores = entrada.find_all('tr')
-			for i, senador in enumerate(senadores):
+			for j, senador in enumerate(senadores):
 				aux = senador.find_all('td')
 				voto = ""		
-				
 				if(asd):
 					nombre = fixName(aux[0].string)
 					if(aux[1].string !=" "):
@@ -96,6 +100,8 @@ if __name__ == '__main__':
 					cursor.execute(query2, data2)
 				asd = True
 			conn.commit()
+			print(i)
+			
 		
 
 		

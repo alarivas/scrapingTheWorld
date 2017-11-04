@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 from bs4 import BeautifulSoup
 import requests
 import re
@@ -63,11 +66,11 @@ def fixName(name):
 if __name__ == '__main__':
 	
 
-	conn = psycopg2.connect("dbname=app user=app password=necesitovida host=152.74.52.213 port=5432")
+	conn = psycopg2.connect("dbname= user= password= host= port=")
 	cursor = conn.cursor()
 	#25358 25845
 	#25562 truncated art
-	for i in range(25700, 25846):
+	for i in range(26000, 26474):
 		url = "https://www.camara.cl/trabajamos/sala_votacion_detalle.aspx?prmID=" + str(i)
 		req = requests.get(url)
 		status_code = req.status_code
@@ -80,15 +83,21 @@ if __name__ == '__main__':
 			
 			try:
 				if entrada.contents[5].contents[1].string.strip() != "Sesión:":
-					fecha = createTimeStamp(entrada.contents[3].contents[2].string.replace("hrs.", "").strip())
-					tema = entrada.contents[5].contents[2].string.strip()
-					articulo = entrada.contents[7].contents[2].string.strip()
-					if len(articulo) > 1000:
-						articulo = articulo[:997] + "..."
+					if entrada.contents[5].contents[1].string.strip() == "Materia:":
+						fecha = createTimeStamp(entrada.contents[3].contents[2].string.replace("hrs.", "").strip())
+						tema = entrada.contents[5].contents[2].string.strip()
+						articulo = entrada.contents[7].contents[2].string.strip()
+						if len(articulo) > 1000:
+							articulo = articulo[:997] + "..."
+					else:
+						fecha = createTimeStamp(entrada.contents[3].contents[2].string.replace("hrs.", "").strip())
+						tema = entrada.contents[1].string.strip()
+						articulo = entrada.contents[7].contents[2].string.strip()
 					#print("Fecha: " + fecha + '\n' + "Tema: " + tema + '\n' + "Art: " + articulo + '\n' + str(i))
-					#cursor.execute("INSERT INTO app_schema.votacion_diputados (id, tema, articulo, fecha) VALUES (%s, %s, %s, %s)", (str(i),tema, articulo, fecha))
+					cursor.execute("INSERT INTO app_schema.votacion_diputados (id, tema, articulo, fecha) VALUES (%s, %s, %s, %s)", (str(i),tema, articulo, fecha))
 				else:
 					continue
+
 			except AttributeError:
 				continue
 
